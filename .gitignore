@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Database SQLite files
+database/*.db
+database/*.db-journal
+
+# Uploads directory (keep directory, exclude uploaded user files)
+uploads/*
+!uploads/.gitkeep
+
+# Environment & logs
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db

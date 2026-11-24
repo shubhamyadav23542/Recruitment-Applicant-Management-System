@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomiesLab - Admin Login</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #FBF8EE 0%, #F2ECE0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .homies-login-box {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(232, 226, 210, 0.8);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-float);
+      padding: 36px;
+    }
+    .login-brand-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .demo-pill-card {
+      background: var(--bg-card-subtle);
+      border: 1px dashed var(--border-subtle);
+      border-radius: var(--radius-tile);
+      padding: 14px;
+      margin-bottom: 20px;
+      font-size: 12.5px;
+    }
+    .demo-pill-card strong {
+      color: var(--text-main);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .demo-autofill-link {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #B78103;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="homies-login-box">
+    <div class="login-brand-header">
+      <div class="brand-emblem-target"></div>
+      <div class="brand-title-text" style="font-size: 22px;">Homies<span>Lab</span></div>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 22px;">
+      <h2 style="font-size: 18px; font-weight: 800; color: var(--text-main);">HR Admin Portal</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Sign in to access your recruitment analytics & candidates</p>
+    </div>
+
+    <!-- Demo Credentials Helper -->
+    <div class="demo-pill-card">
+      <strong>⚡ Demo Administrator Account:</strong>
+      <div>Email: <code>admin@recruitment.com</code></div>
+      <div>Password: <code>admin123</code></div>
+      <span class="demo-autofill-link" id="autoFillBtn">Click to auto-fill credentials</span>
+    </div>
+
+    <div id="loginAlert" style="display: none; padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 13px;"></div>
+
+    <form id="loginForm">
+      <div class="form-group-homies">
+        <label for="username">Email / Username *</label>
+        <input type="text" id="username" class="form-control-homies" placeholder="admin@recruitment.com" required autocomplete="username">
+      </div>
+
+      <div class="form-group-homies">
+        <label for="password">Password *</label>
+        <input type="password" id="password" class="form-control-homies" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" id="submitBtn" class="btn-primary-yellow" style="width: 100%; justify-content: center; padding: 12px; font-size: 14.5px; margin-top: 10px;">
+        <span>Sign In to Dashboard</span> →
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px; font-size: 12.5px;">
+      <a href="apply.html" style="color: var(--text-muted); text-decoration: none;">Candidate looking for jobs? <strong style="color: var(--text-main);">Visit Careers Portal ↗</strong></a>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>
+    // Auto-fill button
+    document.getElementById('autoFillBtn').addEventListener('click', () => {
+      document.getElementById('username').value = 'admin@recruitment.com';
+      document.getElementById('password').value = 'admin123';
+    });
+
+    const loginForm = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const alertBox = document.getElementById('loginAlert');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertBox.style.display = 'none';
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Verifying...</span>';
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          localStorage.setItem('ats_token', data.token);
+          localStorage.setItem('ats_admin', JSON.stringify(data.admin));
+          window.location.href = 'index.html';
+        } else {
+          alertBox.textContent = data.message || 'Invalid credentials.';
+          alertBox.style.display = 'block';
+          alertBox.style.background = '#FEE2E2';
+          alertBox.style.color = '#B91C1C';
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Sign In to Dashboard</span> →';
+        }
+      } catch (err) {
+        alertBox.textContent = 'Server connection error.';
+        alertBox.style.display = 'block';
+        alertBox.style.background = '#FEE2E2';
+        alertBox.style.color = '#B91C1C';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Sign In to Dashboard</span> →';
+      }
+    });
+  </script>
+</body>
+</html>
