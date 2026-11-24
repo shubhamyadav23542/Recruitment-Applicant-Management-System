@@ -2,12 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { dbAsync } = require('../database/database');
 const { supabase } = require('../database/supabase');
-const { authenticateAdmin } = require('../middleware/authMiddleware');
-
-router.use(authenticateAdmin);
+const { authenticateAdmin, optionalAuth } = require('../middleware/authMiddleware');
 
 // GET /api/applicants - List applicants
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { search, skills } = req.query;
 
@@ -86,7 +84,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/applicants/:id - Edit applicant profile (Synced to Supabase)
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { full_name, email, phone, education, skills, experience } = req.body;
@@ -122,7 +120,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/applicants/:id - Delete applicant (Synced to Supabase)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     await dbAsync.run('DELETE FROM applicants WHERE id = ?', [id]);

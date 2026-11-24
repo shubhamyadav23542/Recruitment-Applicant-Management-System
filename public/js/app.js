@@ -6,64 +6,111 @@
 const APP_STATE = {
   admin: null,
   token: null,
+  isLoggedIn: false,
   currentTab: 'dashboard',
-  jobsList: []
+  jobsList: [],
+  selectedModalRole: 'recruiter'
 };
 
-// Check authentication
+// Check authentication - Does NOT force redirect to login.html; supports guest viewing & in-page sign-in!
 function checkAuth() {
   const token = localStorage.getItem('ats_token');
-  const adminData = localStorage.getItem('ats_admin');
+  const adminData = localStorage.getItem('ats_admin') || localStorage.getItem('ats_user');
 
-  if (!token || !adminData) {
-    window.location.href = 'login.html';
-    return false;
+  if (token && adminData) {
+    try {
+      APP_STATE.token = token;
+      APP_STATE.admin = JSON.parse(adminData);
+      APP_STATE.isLoggedIn = true;
+      updateAdminUI();
+      return true;
+    } catch (e) {
+      localStorage.removeItem('ats_token');
+      localStorage.removeItem('ats_admin');
+      APP_STATE.token = null;
+      APP_STATE.admin = null;
+      APP_STATE.isLoggedIn = false;
+    }
+  } else {
+    APP_STATE.token = null;
+    APP_STATE.admin = null;
+    APP_STATE.isLoggedIn = false;
   }
 
-  try {
-    APP_STATE.token = token;
-    APP_STATE.admin = JSON.parse(adminData);
-    updateAdminUI();
-    return true;
-  } catch (e) {
-    localStorage.removeItem('ats_token');
-    localStorage.removeItem('ats_admin');
-    window.location.href = 'login.html';
-    return false;
-  }
+  updateAdminUI();
+  return true;
 }
 
-// Update Admin Info in Sidebar Capsule
+// Update Admin Info in Sidebar Capsule & Top Nav
 function updateAdminUI() {
-  if (!APP_STATE.admin) return;
-
-  const adminName = APP_STATE.admin.full_name || APP_STATE.admin.username || 'Oscar Carol';
-  const adminRole = APP_STATE.admin.role || 'Lead HR Manager';
-  const initial = adminName.charAt(0).toUpperCase();
-
   const nameEl = document.getElementById('adminUserName');
   const roleEl = document.getElementById('adminUserRole');
   const avatarEl = document.getElementById('capsuleAvatar');
   const greetingEl = document.getElementById('greetingHeadline');
 
-  if (nameEl) nameEl.textContent = adminName;
-  if (roleEl) roleEl.textContent = adminRole;
-  if (avatarEl) avatarEl.textContent = initial;
-  if (greetingEl) {
-    const firstName = adminName.split(' ')[0] || 'Homies';
-    greetingEl.textContent = `Good Morning, ${firstName}`;
+  const navSignInBtn = document.getElementById('navSignInBtn');
+  const navDemoBtn = document.getElementById('navDemoBtn');
+  const navPostJobBtn = document.getElementById('navPostJobBtn');
+  const navLogoutBtn = document.getElementById('navLogoutBtn');
+
+  if (APP_STATE.isLoggedIn && APP_STATE.admin) {
+    const adminName = APP_STATE.admin.full_name || APP_STATE.admin.username || 'Oscar Carol';
+    const adminRole = APP_STATE.admin.role || 'HR Recruiter';
+    const initial = adminName.charAt(0).toUpperCase();
+
+    if (nameEl) nameEl.textContent = adminName;
+    if (roleEl) roleEl.textContent = adminRole;
+    if (avatarEl) avatarEl.textContent = initial;
+    if (greetingEl) {
+      const firstName = adminName.split(' ')[0] || 'Homies';
+      greetingEl.textContent = `Good Morning, ${firstName}`;
+    }
+
+    if (navSignInBtn) navSignInBtn.style.display = 'none';
+    if (navDemoBtn) navDemoBtn.style.display = 'none';
+    if (navPostJobBtn) navPostJobBtn.style.display = 'inline-flex';
+    if (navLogoutBtn) navLogoutBtn.style.display = 'inline-flex';
+  } else {
+    // Guest View
+    if (nameEl) nameEl.textContent = 'Guest Visitor';
+    if (roleEl) roleEl.textContent = 'Click to Sign In';
+    if (avatarEl) avatarEl.textContent = '👤';
+    if (greetingEl) {
+      greetingEl.textContent = `Welcome to HomiesLab`;
+    }
+
+    if (navSignInBtn) navSignInBtn.style.display = 'inline-flex';
+    if (navDemoBtn) navDemoBtn.style.display = 'inline-flex';
+    if (navPostJobBtn) navPostJobBtn.style.display = 'none';
+    if (navLogoutBtn) navLogoutBtn.style.display = 'none';
+  }
+}
+
+// Capsule click handler
+function handleCapsuleClick() {
+  if (APP_STATE.isLoggedIn) {
+    logoutAdmin();
+  } else {
+    openLoginModal('recruiter');
   }
 }
 
 // Authenticated API Fetch wrapper
 async function apiFetch(endpoint, options = {}) {
   const token = localStorage.getItem('ats_token');
-  if (!token) {
-    window.location.href = 'login.html';
-    return;
+  const isWriteMethod = options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method.toUpperCase());
+
+  // If a write operation requires authentication but user is not logged in:
+  if (isWriteMethod && !token) {
+    showToast('Please sign in as Recruiter to perform this action.', 'warning');
+    openLoginModal('recruiter');
+    return null;
   }
 
-  const defaultHeaders = { 'Authorization': `Bearer ${token}` };
+  const defaultHeaders = {};
+  if (token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
   if (!(options.body instanceof FormData)) {
     defaultHeaders['Content-Type'] = 'application/json';
   }
@@ -74,10 +121,12 @@ async function apiFetch(endpoint, options = {}) {
     const response = await fetch(endpoint, options);
 
     if (response.status === 401) {
-      showToast('Session expired. Please log in again.', 'warning');
+      showToast('Session expired or authentication required. Please sign in.', 'warning');
       localStorage.removeItem('ats_token');
       localStorage.removeItem('ats_admin');
-      setTimeout(() => { window.location.href = 'login.html'; }, 1000);
+      APP_STATE.isLoggedIn = false;
+      updateAdminUI();
+      openLoginModal('recruiter');
       return null;
     }
 
@@ -94,9 +143,248 @@ async function apiFetch(endpoint, options = {}) {
 function logoutAdmin() {
   localStorage.removeItem('ats_token');
   localStorage.removeItem('ats_admin');
+  localStorage.removeItem('ats_user');
+  localStorage.removeItem('ats_role');
+  APP_STATE.token = null;
+  APP_STATE.admin = null;
+  APP_STATE.isLoggedIn = false;
+  updateAdminUI();
   showToast('Logged out successfully.', 'info');
-  setTimeout(() => { window.location.href = 'login.html'; }, 400);
+  // Re-render current tab in guest mode
+  switchTab(APP_STATE.currentTab || 'dashboard');
 }
+
+// =====================================================================
+// IN-PAGE LOGIN / REGISTRATION MODAL CONTROLLER
+// =====================================================================
+function openLoginModal(defaultRole = 'recruiter') {
+  APP_STATE.selectedModalRole = defaultRole;
+  const modal = document.getElementById('loginModal');
+  if (!modal) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  modal.classList.add('active');
+  selectModalRole(defaultRole);
+  switchModalTab('signin');
+  clearModalAlert();
+}
+
+function closeLoginModal() {
+  const modal = document.getElementById('loginModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function selectModalRole(role) {
+  APP_STATE.selectedModalRole = role;
+  const recCard = document.getElementById('modalRoleRecruiter');
+  const candCard = document.getElementById('modalRoleCandidate');
+  const extraFields = document.getElementById('modalCandidateExtraFields');
+  const demoLabel = document.getElementById('modalDemoLabel');
+  const demoCred = document.getElementById('modalDemoCred');
+  const submitText = document.getElementById('modalSignInSubmitText');
+
+  if (recCard) recCard.classList.toggle('selected', role === 'recruiter');
+  if (candCard) candCard.classList.toggle('selected', role === 'candidate');
+
+  if (role === 'recruiter') {
+    if (extraFields) extraFields.style.display = 'none';
+    if (demoLabel) demoLabel.textContent = '⚡ Demo Recruiter Account';
+    if (demoCred) demoCred.textContent = 'admin@recruitment.com / admin123';
+    if (submitText) submitText.textContent = 'Sign In as Recruiter';
+  } else {
+    if (extraFields) extraFields.style.display = 'block';
+    if (demoLabel) demoLabel.textContent = '⚡ Demo Candidate Account';
+    if (demoCred) demoCred.textContent = 'candidate@example.com / candidate123';
+    if (submitText) submitText.textContent = 'Sign In as Candidate';
+  }
+}
+
+function switchModalTab(tab) {
+  const isSignIn = tab === 'signin';
+  const tabIn = document.getElementById('modalTabSignIn');
+  const tabUp = document.getElementById('modalTabSignUp');
+  const formIn = document.getElementById('modalSignInForm');
+  const formUp = document.getElementById('modalSignUpForm');
+
+  if (tabIn) tabIn.classList.toggle('active', isSignIn);
+  if (tabUp) tabUp.classList.toggle('active', !isSignIn);
+  if (formIn) formIn.style.display = isSignIn ? 'block' : 'none';
+  if (formUp) formUp.style.display = isSignIn ? 'none' : 'block';
+  clearModalAlert();
+}
+
+function showModalAlert(msg, type = 'error') {
+  const box = document.getElementById('modalAlertBox');
+  if (box) {
+    box.textContent = msg;
+    box.className = `alert-box ${type}`;
+    box.style.display = 'block';
+  }
+}
+
+function clearModalAlert() {
+  const box = document.getElementById('modalAlertBox');
+  if (box) {
+    box.style.display = 'none';
+    box.textContent = '';
+  }
+}
+
+async function handleModalSignIn(e) {
+  e.preventDefault();
+  clearModalAlert();
+
+  const email = document.getElementById('modalSiEmail').value.trim();
+  const password = document.getElementById('modalSiPassword').value;
+  const btn = document.getElementById('modalSignInBtn');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>Verifying...</span>';
+  }
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: email,
+        password,
+        role: APP_STATE.selectedModalRole
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      applyLoginSuccess(data);
+    } else {
+      showModalAlert(data.message || 'Invalid credentials. Please try again.', 'error');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Sign In</span> →';
+      }
+    }
+  } catch (err) {
+    showModalAlert('Server connection error. Please try again.', 'error');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Sign In</span> →';
+    }
+  }
+}
+
+async function handleModalSignUp(e) {
+  e.preventDefault();
+  clearModalAlert();
+
+  const name = document.getElementById('modalSuName').value.trim();
+  const email = document.getElementById('modalSuEmail').value.trim();
+  const password = document.getElementById('modalSuPassword').value;
+  const phone = document.getElementById('modalSuPhone') ? document.getElementById('modalSuPhone').value.trim() : '';
+  const education = document.getElementById('modalSuEducation') ? document.getElementById('modalSuEducation').value.trim() : '';
+  const skills = document.getElementById('modalSuSkills') ? document.getElementById('modalSuSkills').value.trim() : '';
+
+  if (password.length < 6) {
+    showModalAlert('Password must be at least 6 characters.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('modalSignUpBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>Creating Account...</span>';
+  }
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        full_name: name,
+        email,
+        password,
+        role: APP_STATE.selectedModalRole,
+        phone,
+        education,
+        skills
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showToast(`🎉 Account created! Welcome, ${name.split(' ')[0]}!`, 'success');
+      applyLoginSuccess(data);
+    } else {
+      showModalAlert(data.message || 'Registration failed.', 'error');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Create Account</span> →';
+      }
+    }
+  } catch (err) {
+    showModalAlert('Server error during registration.', 'error');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Create Account</span> →';
+    }
+  }
+}
+
+async function modalDemoLogin(role) {
+  const targetRole = role || APP_STATE.selectedModalRole || 'recruiter';
+  showToast(`⚡ Logging in as demo ${targetRole}...`, 'info');
+
+  try {
+    const res = await fetch('/api/auth/demo-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: targetRole })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      applyLoginSuccess(data);
+    } else {
+      showModalAlert(data.message || 'Demo login failed.', 'error');
+    }
+  } catch (err) {
+    showModalAlert('Server error during demo login.', 'error');
+  }
+}
+
+// 1-Click Demo Recruiter Login from Top Nav
+function quickDemoRecruiter() {
+  modalDemoLogin('recruiter');
+}
+
+function applyLoginSuccess(data) {
+  localStorage.setItem('ats_token', data.token);
+  localStorage.setItem('ats_user', JSON.stringify(data.user || data.admin));
+  localStorage.setItem('ats_role', data.role);
+  if (data.admin) {
+    localStorage.setItem('ats_admin', JSON.stringify(data.admin));
+  }
+
+  APP_STATE.token = data.token;
+  APP_STATE.admin = data.user || data.admin;
+  APP_STATE.isLoggedIn = true;
+
+  closeLoginModal();
+  updateAdminUI();
+
+  showToast(`👋 Welcome, ${(data.user || data.admin).full_name.split(' ')[0]}!`, 'success');
+
+  if (data.role === 'candidate') {
+    setTimeout(() => { window.location.href = 'candidate-portal.html'; }, 500);
+  } else {
+    // Refresh current view with admin rights
+    switchTab(APP_STATE.currentTab || 'dashboard');
+  }
+}
+
 
 // Tab Switching / Navigation
 function switchTab(tabId) {

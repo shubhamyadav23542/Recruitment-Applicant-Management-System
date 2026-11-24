@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Applications — HomiesLab Candidate Portal</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg-canvas);
+      min-height: 100vh;
+    }
+
+    /* ---- Top Nav ---- */
+    .portal-topnav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.90);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 32px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .portal-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .portal-brand-logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: #18181B;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 900; color: #FFC837;
+    }
+    .portal-brand-name {
+      font-size: 18px; font-weight: 800; color: var(--text-main); letter-spacing: -0.3px;
+    }
+    .portal-brand-name span { color: var(--accent-yellow); }
+
+    .portal-nav-right { display: flex; align-items: center; gap: 12px; }
+    .user-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-card-subtle);
+      border-radius: 20px;
+      padding: 6px 14px 6px 8px;
+      font-size: 13px; font-weight: 700; color: var(--text-main);
+    }
+    .user-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, #18181B, #3F3F46);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: var(--accent-yellow);
+    }
+    .btn-logout {
+      padding: 7px 16px;
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 20px;
+      background: transparent;
+      font-size: 12.5px; font-weight: 700; color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { border-color: #E53E3E; color: #E53E3E; }
+
+    .portal-browse-btn {
+      padding: 8px 18px;
+      border-radius: 20px; border: none;
+      background: var(--accent-yellow);
+      color: var(--obsidian);
+      font-size: 13px; font-weight: 800;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .portal-browse-btn:hover { background: var(--accent-yellow-hover); transform: translateY(-1px); }
+
+    /* ---- Main Layout ---- */
+    .portal-main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+    }
+
+    /* ---- Welcome Bar ---- */
+    .welcome-bar {
+      background: linear-gradient(135deg, #18181B 0%, #27272A 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 24px rgba(24,24,27,0.18);
+      flex-wrap: wrap; gap: 16px;
+    }
+    .welcome-bar-left h1 {
+      font-size: 22px; font-weight: 800;
+      color: #fff; letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+    .welcome-bar-left p {
+      font-size: 13px; color: rgba(255,255,255,0.55);
+    }
+    .welcome-bar-cta {
+      padding: 11px 24px;
+      border-radius: 12px; border: none;
+      background: var(--accent-yellow);
+      color: var(--obsidian);
+      font-size: 14px; font-weight: 800;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 8px;
+      white-space: nowrap;
+    }
+    .welcome-bar-cta:hover { background: #F5B925; transform: translateY(-1px); }
+
+    /* ---- Stats Row ---- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.90);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow-bento);
+    }
+    .stat-card-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .stat-card-value {
+      font-size: 28px; font-weight: 800;
+      color: var(--text-main); letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-card-label {
+      font-size: 12px; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px;
+    }
+
+    /* ---- Section Heading ---- */
+    .section-heading {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-heading h2 {
+      font-size: 17px; font-weight: 800;
+      color: var(--text-main); letter-spacing: -0.2px;
+    }
+    .section-heading span {
+      font-size: 12.5px; color: var(--text-muted); font-weight: 600;
+    }
+
+    /* ---- Application Cards ---- */
+    .applications-grid {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .app-card {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 22px 24px;
+      box-shadow: var(--shadow-bento);
+      display: flex; align-items: flex-start; gap: 18px;
+      transition: all 0.2s;
+    }
+    .app-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-float); }
+
+    .app-card-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: var(--bg-card-subtle);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .app-card-body { flex: 1; min-width: 0; }
+    .app-card-title {
+      font-size: 15px; font-weight: 800; color: var(--text-main);
+      margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .app-card-meta {
+      font-size: 12.5px; color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .app-card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag-pill {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11.5px; font-weight: 700;
+    }
+
+    .app-card-right { text-align: right; flex-shrink: 0; }
+    .status-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+      margin-bottom: 8px;
+      white-space: nowrap;
+    }
+    .app-date {
+      font-size: 11.5px; color: var(--text-muted); font-weight: 600;
+    }
+
+    /* Status colors */
+    .status-Pending { background: var(--status-pending-bg); color: var(--status-pending-text); }
+    .status-Under-Review { background: var(--status-interview-bg); color: var(--status-interview-text); }
+    .status-Shortlisted { background: var(--status-shortlist-bg); color: var(--status-shortlist-text); }
+    .status-Interview-Scheduled { background: var(--status-active-bg); color: var(--status-active-text); }
+    .status-Selected { background: var(--status-selected-bg); color: var(--status-selected-text); }
+    .status-Rejected { background: var(--status-rejected-bg); color: var(--status-rejected-text); }
+
+    /* ---- Interviews Section ---- */
+    .interview-card {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 22px 24px;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+      box-shadow: var(--shadow-bento);
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .interview-card-left { flex: 1; }
+    .interview-card-left h3 { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+    .interview-card-left p { font-size: 12.5px; color: var(--text-muted); margin-bottom: 10px; }
+    .interview-info-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .interview-info-item {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12.5px; font-weight: 600; color: var(--text-main);
+    }
+    .interview-card-right { flex-shrink: 0; }
+
+    /* ---- Profile Card ---- */
+    .profile-card {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: var(--shadow-bento);
+      margin-bottom: 28px;
+    }
+    .profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .profile-avatar {
+      width: 60px; height: 60px; border-radius: 18px;
+      background: linear-gradient(135deg, #18181B, #3F3F46);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 900; color: var(--accent-yellow);
+      flex-shrink: 0;
+    }
+    .profile-name { font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 2px; }
+    .profile-email { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+
+    .profile-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .profile-field label {
+      display: block;
+      font-size: 11.5px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px;
+    }
+    .profile-field input, .profile-field textarea {
+      width: 100%; padding: 10px 12px;
+      border-radius: 10px; border: 1.5px solid var(--border-subtle);
+      background: var(--bg-card-subtle);
+      font-size: 13.5px; font-weight: 500; color: var(--text-main);
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .profile-field input:focus, .profile-field textarea:focus {
+      border-color: var(--accent-yellow);
+      background: #FFFBF0;
+    }
+    .profile-field.full-width { grid-column: 1 / -1; }
+    .btn-save-profile {
+      margin-top: 16px;
+      padding: 10px 24px;
+      border-radius: 10px; border: none;
+      background: var(--accent-yellow);
+      color: var(--obsidian);
+      font-size: 13.5px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-save-profile:hover { background: var(--accent-yellow-hover); }
+
+    /* ---- Empty State ---- */
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 18px; border: 1.5px dashed var(--border-subtle);
+    }
+    .empty-state .empty-icon { font-size: 42px; margin-bottom: 14px; }
+    .empty-state h3 { font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; }
+    .empty-state p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+    /* ---- Loading ---- */
+    .loading-spinner {
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px; font-size: 14px; color: var(--text-muted); font-weight: 600;
+    }
+
+    /* Toast */
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast {
+      background: #18181B; color: #fff;
+      padding: 12px 18px; border-radius: 12px;
+      font-size: 13.5px; font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      animation: toastIn 0.3s ease;
+    }
+    .toast.success { border-left: 3px solid #34D399; }
+    .toast.error { border-left: 3px solid #F87171; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .profile-fields { grid-template-columns: 1fr; }
+      .welcome-bar { flex-direction: column; }
+      .portal-topnav { padding: 0 16px; }
+      .portal-main { padding: 20px 16px; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .app-card { flex-direction: column; }
+      .app-card-right { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Nav -->
+  <nav class="portal-topnav">
+    <a class="portal-brand" href="login.html">
+      <div class="portal-brand-logo">HL</div>
+      <div class="portal-brand-name">Homies<span>Lab</span></div>
+    </a>
+    <div class="portal-nav-right">
+      <div class="user-chip">
+        <div class="user-avatar" id="navAvatar">?</div>
+        <span id="navUserName">Loading...</span>
+      </div>
+      <a href="apply.html" class="portal-browse-btn">🔍 Browse Jobs</a>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="portal-main">
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-spinner">⏳ Loading your dashboard...</div>
+
+    <!-- Portal Content (hidden until loaded) -->
+    <div id="portalContent" style="display:none;">
+
+      <!-- Welcome Bar -->
+      <div class="welcome-bar">
+        <div class="welcome-bar-left">
+          <h1 id="welcomeHeading">Welcome back! 👋</h1>
+          <p id="welcomeSub">Here's a summary of your job search activity</p>
+        </div>
+        <a href="apply.html" class="welcome-bar-cta">+ Apply for a New Job</a>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#EEF2FF;">📋</div>
+          <div class="stat-card-value" id="statApplied">0</div>
+          <div class="stat-card-label">Jobs Applied</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#FFF3E0;">⭐</div>
+          <div class="stat-card-value" id="statShortlisted">0</div>
+          <div class="stat-card-label">Shortlisted</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#E0F2FE;">📅</div>
+          <div class="stat-card-value" id="statInterviews">0</div>
+          <div class="stat-card-label">Interviews</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:#FFF8E1;">🕐</div>
+          <div class="stat-card-value" id="statUnderReview">0</div>
+          <div class="stat-card-label">Under Review</div>
+        </div>
+      </div>
+
+      <!-- Upcoming Interviews -->
+      <div id="interviewSection">
+        <div class="section-heading">
+          <h2>📅 Upcoming Interviews</h2>
+          <span id="interviewCount">0 scheduled</span>
+        </div>
+        <div id="interviewsList">
+          <div class="empty-state">
+            <div class="empty-icon">📅</div>
+            <h3>No Interviews Scheduled Yet</h3>
+            <p>Once a recruiter schedules your interview, it'll appear here.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Applications -->
+      <div style="margin-top: 32px;">
+        <div class="section-heading">
+          <h2>📋 My Applications</h2>
+          <span id="appCount">0 applications</span>
+        </div>
+        <div class="applications-grid" id="applicationsList">
+          <div class="empty-state">
+            <div class="empty-icon">🚀</div>
+            <h3>No Applications Yet</h3>
+            <p>Start applying to jobs to see your applications here.</p>
+            <a href="apply.html" class="welcome-bar-cta" style="display:inline-flex;">Browse Open Jobs →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Section -->
+      <div style="margin-top: 32px;">
+        <div class="section-heading">
+          <h2>👤 My Profile</h2>
+        </div>
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="profile-avatar" id="profileAvatar">?</div>
+            <div>
+              <div class="profile-name" id="profileName">—</div>
+              <div class="profile-email" id="profileEmail">—</div>
+            </div>
+          </div>
+          <form id="profileForm" onsubmit="saveProfile(event)">
+            <div class="profile-fields">
+              <div class="profile-field">
+                <label>Full Name</label>
+                <input type="text" id="pfName" required>
+              </div>
+              <div class="profile-field">
+                <label>Phone Number</label>
+                <input type="tel" id="pfPhone" placeholder="+91 98765 43210">
+              </div>
+              <div class="profile-field full-width">
+                <label>Education</label>
+                <input type="text" id="pfEducation" placeholder="e.g. B.Tech CSE - IIT Bombay (2023)">
+              </div>
+              <div class="profile-field full-width">
+                <label>Key Skills</label>
+                <input type="text" id="pfSkills" placeholder="e.g. JavaScript, Python, SQL, React">
+              </div>
+              <div class="profile-field full-width">
+                <label>Experience Summary</label>
+                <textarea id="pfExperience" rows="3" placeholder="Briefly describe your work experience..."></textarea>
+              </div>
+            </div>
+            <button type="submit" class="btn-save-profile">💾 Save Profile Changes</button>
+          </form>
+        </div>
+      </div>
+
+    </div><!-- /portalContent -->
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const token = localStorage.getItem('ats_token');
+    const role = localStorage.getItem('ats_role');
+
+    // Guard: If not logged in as candidate, redirect to login
+    if (!token || role !== 'candidate') {
+      window.location.href = 'login.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('ats_token');
+      localStorage.removeItem('ats_user');
+      localStorage.removeItem('ats_role');
+      localStorage.removeItem('ats_admin');
+      window.location.href = 'login.html';
+    }
+
+    function escHtml(str) {
+      if (!str) return '—';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function getInitials(name) {
+      if (!name) return '?';
+      return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      try {
+        return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      } catch { return dateStr; }
+    }
+
+    function getStatusClass(status) {
+      return 'status-' + (status || 'Pending').replace(/\s+/g, '-');
+    }
+
+    function getStatusEmoji(status) {
+      const map = {
+        'Pending': '🕐', 'Under Review': '🔍', 'Shortlisted': '⭐',
+        'Interview Scheduled': '📅', 'Selected': '🎉', 'Rejected': '❌'
+      };
+      return map[status] || '📋';
+    }
+
+    function getDeptEmoji(dept) {
+      const map = {
+        'Engineering': '⚙️', 'Design': '🎨', 'DevOps': '☁️',
+        'Human Resources': '🤝', 'Infrastructure': '🏗️', 'Marketing': '📣',
+        'Finance': '💰', 'Operations': '🔧'
+      };
+      return map[dept] || '🏢';
+    }
+
+    async function loadPortal() {
+      try {
+        const res = await fetch('/api/candidates/my-portal', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          if (res.status === 401 || res.status === 403) {
+            logout();
+          }
+          return;
+        }
+
+        const { candidate, stats, applications, interviews } = data;
+
+        // Nav & Welcome
+        const initials = getInitials(candidate.full_name);
+        document.getElementById('navAvatar').textContent = initials;
+        document.getElementById('navUserName').textContent = candidate.full_name.split(' ')[0];
+        document.getElementById('welcomeHeading').textContent = `Welcome back, ${candidate.full_name.split(' ')[0]}! 👋`;
+        document.getElementById('welcomeSub').textContent = `You have ${stats.total_applied} application${stats.total_applied !== 1 ? 's' : ''} on file.`;
+
+        // Stats
+        document.getElementById('statApplied').textContent = stats.total_applied;
+        document.getElementById('statShortlisted').textContent = stats.shortlisted;
+        document.getElementById('statInterviews').textContent = stats.interviews_scheduled;
+        document.getElementById('statUnderReview').textContent = stats.under_review;
+
+        // Profile
+        document.getElementById('profileAvatar').textContent = initials;
+        document.getElementById('profileName').textContent = candidate.full_name;
+        document.getElementById('profileEmail').textContent = candidate.email;
+        document.getElementById('pfName').value = candidate.full_name || '';
+        document.getElementById('pfPhone').value = candidate.phone || '';
+        document.getElementById('pfEducation').value = candidate.education || '';
+        document.getElementById('pfSkills').value = candidate.skills || '';
+        document.getElementById('pfExperience').value = candidate.experience || '';
+
+        // Interviews
+        const interviewsList = document.getElementById('interviewsList');
+        document.getElementById('interviewCount').textContent = `${interviews.length} scheduled`;
+        if (interviews.length > 0) {
+          interviewsList.innerHTML = interviews.map(iv => `
+            <div class="interview-card">
+              <div class="interview-card-left">
+                <h3>${escHtml(iv.job_title)}</h3>
+                <p style="color:var(--text-muted);font-size:12.5px;">${escHtml(iv.department)} • ${escHtml(iv.interview_type)}</p>
+                <div class="interview-info-row">
+                  <div class="interview-info-item">📅 ${escHtml(iv.interview_date)}</div>
+                  <div class="interview-info-item">⏰ ${escHtml(iv.interview_time)}</div>
+                  <div class="interview-info-item">📍 ${escHtml(iv.location)}</div>
+                </div>
+                ${iv.notes ? `<div style="margin-top:10px;padding:10px 12px;background:var(--bg-card-subtle);border-radius:10px;font-size:12.5px;color:var(--text-muted);">💬 ${escHtml(iv.notes)}</div>` : ''}
+              </div>
+              <div class="interview-card-right">
+                <span class="status-badge status-${iv.status.replace(/\s+/g,'-')}">${escHtml(iv.status)}</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          interviewsList.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">📅</div>
+              <h3>No Interviews Scheduled Yet</h3>
+              <p>Once a recruiter schedules your interview, it'll appear here.</p>
+            </div>`;
+        }
+
+        // Applications
+        const appList = document.getElementById('applicationsList');
+        document.getElementById('appCount').textContent = `${applications.length} application${applications.length !== 1 ? 's' : ''}`;
+
+        if (applications.length > 0) {
+          // Deduplicate by application_id
+          const seen = new Set();
+          const unique = applications.filter(a => {
+            if (seen.has(a.application_id)) return false;
+            seen.add(a.application_id);
+            return true;
+          });
+
+          appList.innerHTML = unique.map(app => `
+            <div class="app-card">
+              <div class="app-card-icon">${getDeptEmoji(app.department)}</div>
+              <div class="app-card-body">
+                <div class="app-card-title">${escHtml(app.job_title)}</div>
+                <div class="app-card-meta">📍 ${escHtml(app.location)} &nbsp;•&nbsp; ${escHtml(app.job_type)} &nbsp;•&nbsp; 💰 ${escHtml(app.salary_range)}</div>
+                <div class="app-card-tags">
+                  <span class="tag-pill" style="background:#F6F2E5;color:var(--text-muted);">${escHtml(app.department)}</span>
+                  ${app.is_shortlisted ? `<span class="tag-pill" style="background:#FFF8E1;color:#B78103;">⭐ Shortlisted</span>` : ''}
+                </div>
+              </div>
+              <div class="app-card-right">
+                <div class="status-badge ${getStatusClass(app.status)}">${getStatusEmoji(app.status)} ${escHtml(app.status)}</div>
+                <div class="app-date">Applied: ${formatDate(app.applied_at)}</div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          appList.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">🚀</div>
+              <h3>No Applications Yet</h3>
+              <p>Browse open positions and submit your first application!</p>
+              <a href="apply.html" class="welcome-bar-cta" style="display:inline-flex;margin-top:16px;">Browse Open Jobs →</a>
+            </div>`;
+        }
+
+        // Show content
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('portalContent').style.display = 'block';
+
+      } catch (err) {
+        console.error('Portal load error:', err);
+        document.getElementById('loadingState').textContent = '❌ Failed to load your portal. Please try refreshing.';
+      }
+    }
+
+    async function saveProfile(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch('/api/candidates/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            full_name: document.getElementById('pfName').value.trim(),
+            phone: document.getElementById('pfPhone').value.trim(),
+            education: document.getElementById('pfEducation').value.trim(),
+            skills: document.getElementById('pfSkills').value.trim(),
+            experience: document.getElementById('pfExperience').value.trim()
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✅ Profile updated successfully!', 'success');
+          if (data.candidate) {
+            const initials = getInitials(data.candidate.full_name);
+            document.getElementById('profileAvatar').textContent = initials;
+            document.getElementById('navAvatar').textContent = initials;
+            document.getElementById('profileName').textContent = data.candidate.full_name;
+            document.getElementById('navUserName').textContent = data.candidate.full_name.split(' ')[0];
+          }
+        } else {
+          showToast('❌ ' + (data.message || 'Update failed.'), 'error');
+        }
+      } catch (err) {
+        showToast('❌ Server error. Please try again.', 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = '💾 Save Profile Changes';
+    }
+
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    // Load on page ready
+    loadPortal();
+  </script>
+</body>
+</html>

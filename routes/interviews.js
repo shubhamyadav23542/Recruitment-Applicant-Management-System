@@ -2,12 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { dbAsync } = require('../database/database');
 const { supabase } = require('../database/supabase');
-const { authenticateAdmin } = require('../middleware/authMiddleware');
-
-router.use(authenticateAdmin);
+const { authenticateAdmin, optionalAuth } = require('../middleware/authMiddleware');
 
 // GET /api/interviews - List interviews with filters
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { status, upcoming, search } = req.query;
 
@@ -57,7 +55,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/interviews - Schedule candidate interview (Stores in SQLite & Supabase)
-router.post('/', async (req, res) => {
+router.post('/', authenticateAdmin, async (req, res) => {
   try {
     const {
       application_id,
@@ -153,7 +151,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/interviews/:id - Edit interview (Synced to Supabase)
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -217,7 +215,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/interviews/:id - Cancel or delete interview (Synced to Supabase)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     await dbAsync.run('DELETE FROM interviews WHERE id = ?', [id]);

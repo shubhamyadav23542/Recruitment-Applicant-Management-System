@@ -1,12 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { dbAsync } = require('../database/database');
-const { authenticateAdmin } = require('../middleware/authMiddleware');
+const { optionalAuth } = require('../middleware/authMiddleware');
 
-router.use(authenticateAdmin);
-
-// GET /api/dashboard/stats - Recruitment statistics and funnel data
-router.get('/stats', async (req, res) => {
+// GET /api/dashboard/stats - Recruitment statistics and funnel data (Accessible for dashboard view)
+router.get('/stats', optionalAuth, async (req, res) => {
   try {
     // 1. Basic counts
     const totalJobsRow = await dbAsync.get('SELECT COUNT(*) as count FROM jobs');

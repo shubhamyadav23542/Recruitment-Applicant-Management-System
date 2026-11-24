@@ -107,10 +107,18 @@ async function initializeDatabase() {
         education TEXT NOT NULL,
         skills TEXT NOT NULL,
         experience TEXT NOT NULL,
+        password_hash TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // Migration helper: Ensure password_hash column exists on existing applicants table
+    try {
+      await dbAsync.exec(`ALTER TABLE applicants ADD COLUMN password_hash TEXT;`);
+    } catch (e) {
+      // Column already exists, safe to ignore
+    }
 
     // 4. Resumes table
     await dbAsync.exec(`
@@ -176,6 +184,58 @@ async function initializeDatabase() {
         ['admin', 'admin@recruitment.com', hash, 'Lead HR Administrator', 'Administrator']
       );
       console.log('Default admin seeded: admin@recruitment.com / admin123');
+    }
+
+    // Seed default demo candidate if none exists
+    let candidateUser = await dbAsync.get('SELECT * FROM applicants WHERE email = ?', ['candidate@example.com']);
+    if (!candidateUser) {
+      const candidatePassword = 'candidate123';
+      const cSalt = bcrypt.genSaltSync(10);
+      const cHash = bcrypt.hashSync(candidatePassword, cSalt);
+      const candResult = await dbAsync.run(
+        `INSERT INTO applicants (full_name, email, phone, education, skills, experience, password_hash)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          'Aarav Sharma',
+          'candidate@example.com',
+          '+91 98765 43210',
+          'B.Tech in Computer Science - IIT Bombay (2022)',
+          'JavaScript, Node.js, Express, React, PostgreSQL, Docker',
+          '2+ years building scalable SaaS web platforms and cloud APIs.',
+          cHash
+        ]
+      );
+      console.log('Default demo candidate seeded: candidate@example.com / candidate123');
+
+      // Link Aarav to an application
+      const firstJob = await dbAsync.get('SELECT id FROM jobs LIMIT 1');
+      if (firstJob) {
+        const appRes = await dbAsync.run(
+          `INSERT INTO applications (job_id, applicant_id, status, is_shortlisted, cover_note, review_notes)
+           VALUES (?, ?, 'Interview Scheduled', 1, ?, ?)`,
+          [
+            firstJob.id,
+            candResult.lastID,
+            'Passionate about full-stack architectures and modern JavaScript.',
+            'Exceptional candidate profile, scheduled for technical system round.'
+          ]
+        );
+
+        // Schedule an interview
+        await dbAsync.run(
+          `INSERT INTO interviews (application_id, interview_date, interview_time, location, interview_type, status, notes)
+           VALUES (?, '2026-11-28', '11:30 AM', 'Google Meet: meet.google.com/xyz-homies-lab', 'Technical System Design', 'Scheduled', ?)`,
+          [
+            appRes.lastID,
+            'Discussion on REST APIs, database schemas, and Node.js performance.'
+          ]
+        );
+      }
+    } else if (!candidateUser.password_hash) {
+      // If user exists without password_hash, update with candidate123
+      const cSalt = bcrypt.genSaltSync(10);
+      const cHash = bcrypt.hashSync('candidate123', cSalt);
+      await dbAsync.run('UPDATE applicants SET password_hash = ? WHERE id = ?', [cHash, candidateUser.id]);
     }
 
     // Seed initial active jobs if none exist

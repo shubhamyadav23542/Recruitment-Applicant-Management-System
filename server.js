@@ -27,6 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/applicants', require('./routes/applicants'));
+app.use('/api/candidates', require('./routes/candidates'));
 app.use('/api/applications', require('./routes/applications'));
 app.use('/api/interviews', require('./routes/interviews'));
 app.use('/api/dashboard', require('./routes/dashboard'));
@@ -38,6 +39,14 @@ app.get('/login', (req, res) => {
 
 app.get('/apply', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'apply.html'));
+});
+
+app.get('/portal', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'candidate-portal.html'));
+});
+
+app.get('/candidate-portal', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'candidate-portal.html'));
 });
 
 app.get('/admin', (req, res) => {

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { dbAsync } = require('../database/database');
 const { supabase } = require('../database/supabase');
-const { authenticateAdmin } = require('../middleware/authMiddleware');
+const { authenticateAdmin, optionalAuth } = require('../middleware/authMiddleware');
 
 // GET /api/jobs/public - Available active jobs for candidate application form
 router.get('/public', async (req, res) => {
@@ -20,8 +20,8 @@ router.get('/public', async (req, res) => {
   }
 });
 
-// GET /api/jobs - Admin: view all jobs (with application stats)
-router.get('/', authenticateAdmin, async (req, res) => {
+// GET /api/jobs - View all jobs (with application stats)
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { search, department, status } = req.query;
     let query = `

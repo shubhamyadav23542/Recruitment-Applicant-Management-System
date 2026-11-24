@@ -5,7 +5,7 @@ const fs = require('fs');
 const multer = require('multer');
 const { dbAsync } = require('../database/database');
 const { supabase, uploadResumeToSupabase } = require('../database/supabase');
-const { authenticateAdmin } = require('../middleware/authMiddleware');
+const { authenticateAdmin, optionalAuth } = require('../middleware/authMiddleware');
 
 // Configure Multer storage for PDF resumes
 const resumesDir = path.join(__dirname, '..', 'uploads', 'resumes');
@@ -237,8 +237,8 @@ router.post('/', uploadMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/applications - Admin: filter and list applications
-router.get('/', authenticateAdmin, async (req, res) => {
+// GET /api/applications - Filter and list applications
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { search, job_id, status, skills, is_shortlisted, date_from, date_to } = req.query;
 
@@ -320,8 +320,8 @@ router.get('/', authenticateAdmin, async (req, res) => {
   }
 });
 
-// GET /api/applications/:id - Admin: single application full profile
-router.get('/:id', authenticateAdmin, async (req, res) => {
+// GET /api/applications/:id - View single application details
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const application = await dbAsync.get(
