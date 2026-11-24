@@ -50,7 +50,11 @@ app.get('/candidate-portal', (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
 // Fallback for HTML5 client routing (non-API)

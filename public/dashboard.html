@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomiesLab - SaaS HR Admin Panel UI</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Outer Dashboard Window Frame -->
+  <div class="dashboard-viewport-frame">
+
+    <!-- ===============================================================
+         HOMIESLAB SIDEBAR NAVIGATION
+         =============================================================== -->
+    <aside class="homies-sidebar" id="homiesSidebar">
+      <div>
+        <!-- Logo Emblem -->
+        <a href="index.html" class="sidebar-brand-box" style="text-decoration: none;" title="Go to Careers Front Page">
+          <div class="brand-emblem-target"></div>
+          <div class="brand-title-text">Homies<span>Lab</span></div>
+        </a>
+
+        <!-- Search Bar Pill -->
+        <div class="sidebar-search-pill">
+          <span style="color: var(--text-muted); font-size: 13px;">🔍</span>
+          <input type="text" id="globalSidebarSearch" placeholder="Search here...">
+        </div>
+
+        <!-- 2x3 Bento App Switcher Navigation Grid -->
+        <div class="bento-nav-grid">
+          <div class="bento-nav-tile active" data-tab="dashboard">
+            <div class="tile-icon">⊞</div>
+            <div class="tile-label">Dashboard</div>
+          </div>
+          <div class="bento-nav-tile" data-tab="jobs">
+            <div class="tile-icon">💼</div>
+            <div class="tile-label">Jobs</div>
+          </div>
+          <div class="bento-nav-tile" data-tab="applications">
+            <div class="tile-icon">👥</div>
+            <div class="tile-label">Applicants</div>
+          </div>
+          <div class="bento-nav-tile" data-tab="shortlist">
+            <div class="tile-icon">⭐</div>
+            <div class="tile-label">Shortlist</div>
+          </div>
+          <div class="bento-nav-tile" data-tab="interviews">
+            <div class="tile-icon">📅</div>
+            <div class="tile-label">Interviews</div>
+          </div>
+          <a href="apply.html" target="_blank" class="bento-nav-tile" style="text-decoration: none;">
+            <div class="tile-icon">↗</div>
+            <div class="tile-label">Careers</div>
+          </a>
+        </div>
+
+        <!-- Sub-Navigation Accordions -->
+        <div class="sub-nav-section">
+          <div class="sub-nav-header">
+            <span>Favorite</span>
+            <span>⌵</span>
+          </div>
+          <div class="sub-nav-list">
+            <div class="sub-nav-item" onclick="switchTab('dashboard')">
+              <span class="yellow-bullet"></span>
+              <span>Opportunity Stages</span>
+            </div>
+            <div class="sub-nav-item" onclick="switchTab('dashboard')">
+              <span class="yellow-bullet"></span>
+              <span>Key Metrics</span>
+            </div>
+            <div class="sub-nav-item" onclick="switchTab('shortlist')">
+              <span class="yellow-bullet"></span>
+              <span>Candidate Pipeline</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub-nav-section">
+          <div class="sub-nav-header">
+            <span>Recruitment</span>
+            <span>⌵</span>
+          </div>
+          <div class="sub-nav-list">
+            <div class="sub-nav-item" onclick="switchTab('jobs')">
+              <span>💼</span>
+              <span>Job Postings</span>
+            </div>
+            <div class="sub-nav-item" onclick="switchTab('applications')">
+              <span>📥</span>
+              <span>Applications</span>
+            </div>
+            <div class="sub-nav-item" onclick="switchTab('interviews')">
+              <span>📅</span>
+              <span>Schedule Agenda</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Profile Capsule & Notification Bell -->
+      <div class="sidebar-bottom-capsule-row">
+        <button type="button" class="profile-capsule-btn" id="capsuleProfileBtn" onclick="handleCapsuleClick()" title="User Session (Click to Sign In or Logout)">
+          <div class="capsule-avatar" id="capsuleAvatar">👤</div>
+          <div class="capsule-info">
+            <div class="capsule-name" id="adminUserName">Guest Visitor</div>
+            <div class="capsule-role" id="adminUserRole">Click to Sign In</div>
+          </div>
+          <span style="font-size: 11px; color: var(--text-subtle);">⌵</span>
+        </button>
+
+        <div class="notification-square-btn" title="Notifications" onclick="showToast('Welcome to HomiesLab Recruitment System', 'info')">
+          🔔
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===============================================================
+         MAIN CONTENT AREA
+         =============================================================== -->
+    <main class="main-content-scrollable">
+
+      <!-- Breadcrumbs & Top Utilities -->
+      <div class="top-header-row">
+        <div>
+          <button type="button" class="icon-squircle-btn mobile-menu-btn" id="mobileMenuToggle" style="display: none; margin-bottom: 8px;">
+            ☰
+          </button>
+          <div class="header-breadcrumbs">
+            Home <span>/</span> <span id="currentBreadcrumbText">Dashboard</span>
+          </div>
+        </div>
+
+        <div class="top-action-pills" id="topActionPills">
+          <button type="button" class="icon-squircle-btn" title="Calendar" onclick="switchTab('interviews')">
+            📅
+          </button>
+          <a href="index.html" class="icon-squircle-btn" title="Careers Front Page" style="text-decoration: none;">
+            🏠
+          </a>
+          <!-- Shown when NOT logged in -->
+          <button type="button" class="btn-primary-yellow" id="navSignInBtn" onclick="openLoginModal()" style="display: inline-flex;">
+            🔑 Sign In
+          </button>
+          <button type="button" class="btn-primary-black" id="navDemoBtn" onclick="quickDemoRecruiter()" style="display: inline-flex;">
+            ⚡ Demo
+          </button>
+          
+          <!-- Shown when LOGGED IN -->
+          <button type="button" class="btn-primary-yellow" id="navPostJobBtn" onclick="openJobModal()" style="display: none;">
+            <span>+</span> Post New Job
+          </button>
+          <button type="button" class="btn-primary-black" id="navLogoutBtn" onclick="logoutAdmin()" style="display: none;">
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Greeting Hero Banner -->
+      <div class="greeting-hero-banner">
+        <div>
+          <h1 class="greeting-headline" id="greetingHeadline">Good Morning, Homies</h1>
+          <div class="greeting-subdate" id="greetingDateText">It's Tuesday, 24 November 2026</div>
+        </div>
+      </div>
+
+      <!-- ===========================================================
+           VIEW 1: HOMIESLAB DASHBOARD (BENTO GRID)
+           =========================================================== -->
+      <div id="dashboardView" class="tab-view active">
+        
+        <!-- Quick-Stat Summary Metric Row -->
+        <div class="kpi-summary-row" style="margin-bottom: 24px;">
+          <div class="kpi-mini-card">
+            <div class="kpi-circle-icon black">👥</div>
+            <div>
+              <div class="kpi-val" id="statTotalApplicants">432</div>
+              <div class="kpi-lbl">Total Applicants</div>
+            </div>
+          </div>
+
+          <div class="kpi-mini-card">
+            <div class="kpi-circle-icon yellow">💼</div>
+            <div>
+              <div class="kpi-val" id="statTotalJobs">24</div>
+              <div class="kpi-lbl">Active Job Postings</div>
+            </div>
+          </div>
+
+          <div class="kpi-mini-card">
+            <div class="kpi-circle-icon cream">⭐</div>
+            <div>
+              <div class="kpi-val" id="statShortlisted">8%</div>
+              <div class="kpi-lbl">Shortlist Ratio</div>
+            </div>
+          </div>
+
+          <div class="kpi-mini-card">
+            <div class="kpi-circle-icon yellow">📅</div>
+            <div>
+              <div class="kpi-val" id="statInterviews">24</div>
+              <div class="kpi-lbl">Interviews Scheduled</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle Bento Grid (Schedule + Velocity Chart + Status Pillars) -->
+        <div class="bento-middle-grid" style="margin-bottom: 24px;">
+          
+          <!-- Bento Card 1: Schedule & Meeting Agenda -->
+          <div class="bento-card">
+            <div>
+              <div class="bento-card-header">
+                <div class="bento-card-title">Schedule</div>
+                <div class="card-kebab-menu" onclick="switchTab('interviews')">···</div>
+              </div>
+
+              <!-- Segmented Pills -->
+              <div class="segmented-pill-tabs">
+                <button type="button" class="seg-tab-btn active">Meetings</button>
+                <button type="button" class="seg-tab-btn">Tasks</button>
+                <button type="button" class="seg-tab-btn">Events</button>
+              </div>
+
+              <!-- Schedule Cards Container -->
+              <div id="homiesScheduleList">
+                <!-- Highlight Card (Yellow Gradient) -->
+                <div class="schedule-card-item highlight-yellow">
+                  <div>
+                    <div class="schedule-card-title">Interview Candidate UI/UX Designer</div>
+                    <div class="schedule-card-sub">Project Discussion & Design Challenge</div>
+                  </div>
+                  <div class="schedule-meta-row">
+                    <span class="pill-meet-tag">📹 Google Meet</span>
+                    <span class="time-badge">13:00 - 13:30</span>
+                  </div>
+                </div>
+
+                <!-- Secondary Card (Frosted White) -->
+                <div class="schedule-card-item frosted-ivory">
+                  <div>
+                    <div class="schedule-card-title">Retro Day Celebration - HR Dept</div>
+                    <div class="schedule-card-sub">Quarterly Hiring Alignment</div>
+                  </div>
+                  <div class="schedule-meta-row">
+                    <span class="pill-meet-tag">📍 Room 302</span>
+                    <span class="time-badge">15:00 - 16:00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 10px; text-align: center;">
+              <button type="button" class="btn-primary-yellow" style="width: 100%; padding: 8px 16px; font-size: 12.5px;" onclick="openScheduleInterviewModal()">
+                + Schedule New Meeting
+              </button>
+            </div>
+          </div>
+
+          <!-- Bento Card 2: Average Team / Hiring Velocity Line Chart -->
+          <div class="bento-card">
+            <div>
+              <div class="bento-card-header">
+                <div>
+                  <div class="kpi-chart-val" id="velocityRateVal">70,32%</div>
+                  <div class="kpi-chart-sub">🎯 Average Hiring Velocity</div>
+                </div>
+                <div class="drilldown-circle-btn" title="View Detailed Analytics" onclick="switchTab('applications')">
+                  ↗
+                </div>
+              </div>
+
+              <!-- Pure SVG Organic Line Chart -->
+              <div style="width: 100%; height: 160px; margin-top: 10px;">
+                <svg viewBox="0 0 400 160" width="100%" height="100%" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="yellowGlowGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#FFC837" stop-opacity="0.45" />
+                      <stop offset="100%" stop-color="#FFC837" stop-opacity="0.0" />
+                    </linearGradient>
+                  </defs>
+                  <!-- Smooth Area Fill -->
+                  <path d="M 0 130 C 50 110, 80 140, 130 90 C 180 40, 220 110, 270 70 C 320 30, 360 85, 400 45 L 400 160 L 0 160 Z" fill="url(#yellowGlowGrad)" />
+                  <!-- Yellow Stroke Line -->
+                  <path d="M 0 130 C 50 110, 80 140, 130 90 C 180 40, 220 110, 270 70 C 320 30, 360 85, 400 45" fill="none" stroke="#FFC837" stroke-width="4.5" stroke-linecap="round" />
+                  <!-- High Points Dots -->
+                  <circle cx="130" cy="90" r="5" fill="#18181B" stroke="#FFC837" stroke-width="3" />
+                  <circle cx="270" cy="70" r="5" fill="#18181B" stroke="#FFC837" stroke-width="3" />
+                  <circle cx="400" cy="45" r="5" fill="#FFC837" stroke="#18181B" stroke-width="3" />
+                </svg>
+              </div>
+
+              <!-- Month timeline labels -->
+              <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-top: 6px;">
+                <span>Jul</span>
+                <span>Aug</span>
+                <span>Sep</span>
+                <span>Oct</span>
+                <span>Nov</span>
+                <span>Dec</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bento Card 3: Employment Status Pillars & Satisfaction Gauge -->
+          <div class="bento-card">
+            <div>
+              <div class="bento-card-header">
+                <div>
+                  <div class="bento-card-title">Employment Status</div>
+                  <div style="font-size: 12px; color: var(--text-muted);"><strong>450</strong> Active Pool</div>
+                </div>
+                <div class="card-kebab-menu">···</div>
+              </div>
+
+              <!-- 3 Cylindrical Pillar Bars -->
+              <div class="pillars-container">
+                <!-- Permanent -->
+                <div class="pillar-col">
+                  <span class="pillar-pct-badge">49%</span>
+                  <div class="pillar-bar yellow" style="height: 110px;"></div>
+                  <span class="pillar-label">Permanent</span>
+                </div>
+                <!-- Contract -->
+                <div class="pillar-col">
+                  <span class="pillar-pct-badge">31%</span>
+                  <div class="pillar-bar obsidian" style="height: 75px;"></div>
+                  <span class="pillar-label">Contract</span>
+                </div>
+                <!-- Probation -->
+                <div class="pillar-col">
+                  <span class="pillar-pct-badge">20%</span>
+                  <div class="pillar-bar grey" style="height: 50px;"></div>
+                  <span class="pillar-label">Probation</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Radial Gauge Indicator -->
+            <div class="gauge-wrapper" style="margin-top: 14px;">
+              <svg width="150" height="85" viewBox="0 0 160 90">
+                <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="#EBE5D3" stroke-width="14" stroke-linecap="round" />
+                <path d="M 20 80 A 60 60 0 0 1 125 40" fill="none" stroke="#FFC837" stroke-width="14" stroke-linecap="round" />
+              </svg>
+              <div class="gauge-center-content">
+                <div class="gauge-pct-text">80%</div>
+                <div class="gauge-sub-text">Candidate Satisfaction</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 5 Mini Cards Row (HomiesLab Leave Balances / Pipeline Stages) -->
+        <div class="five-cards-row" style="margin-bottom: 24px;">
+          
+          <div class="five-mini-card">
+            <div class="five-card-top-title">Pending Screening</div>
+            <div class="five-card-metric" id="cardPendingCount">12 <span>Apps</span></div>
+            <a class="five-card-link" onclick="switchTab('applications')">Review Now ↗</a>
+          </div>
+
+          <div class="five-mini-card">
+            <div class="five-card-top-title">Under Review</div>
+            <div class="five-card-metric" id="cardReviewCount">8 <span>Apps</span></div>
+            <a class="five-card-link" onclick="switchTab('applications')">Inspect ↗</a>
+          </div>
+
+          <div class="five-mini-card">
+            <div class="five-card-top-title">Shortlisted Talent</div>
+            <div class="five-card-metric" id="cardShortlistedCount">6 <span>Pool</span></div>
+            <a class="five-card-link" onclick="switchTab('shortlist')">Shortlist ↗</a>
+          </div>
+
+          <div class="five-mini-card">
+            <div class="five-card-top-title">Interviews Scheduled</div>
+            <div class="five-card-metric" id="cardInterviewCount">4 <span>Rounds</span></div>
+            <a class="five-card-link" onclick="switchTab('interviews')">Schedule ↗</a>
+          </div>
+
+          <div class="five-mini-card">
+            <div class="five-card-top-title">Selected / Hired</div>
+            <div class="five-card-metric" id="cardSelectedCount">5 <span>Offers</span></div>
+            <a class="five-card-link" onclick="switchTab('applications')">Dossiers ↗</a>
+          </div>
+
+        </div>
+
+        <!-- Bottom Data Table: "List Employee" / Candidates -->
+        <div class="table-bento-card">
+          <div class="table-toolbar-homies">
+            <div class="table-title-box">
+              <h3>List Candidates</h3>
+              <p style="font-size: 12px; color: var(--text-muted);">Real-time applicant database and recruitment progress</p>
+            </div>
+
+            <div class="table-controls-right">
+              <div class="table-search-pill">
+                <span>🔍</span>
+                <input type="text" id="dashboardTableSearch" placeholder="Search candidate, role...">
+              </div>
+              <button type="button" class="icon-squircle-btn" title="Filter" onclick="switchTab('applications')">
+                ⚙️
+              </button>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="homies-data-table">
+              <thead>
+                <tr>
+                  <th>NAME</th>
+                  <th>EMPLOYEE / APPLICANT ID</th>
+                  <th>ROLE</th>
+                  <th>EMAIL</th>
+                  <th>STATUS</th>
+                  <th>DATE</th>
+                  <th>DEPARTMENT</th>
+                  <th>ACTION</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardCandidatesBody">
+                <tr><td colspan="8" style="text-align: center; padding: 30px;">Loading candidate records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===========================================================
+           VIEW 2: JOBS MANAGEMENT
+           =========================================================== -->
+      <div id="jobsView" class="tab-view" style="display: none;">
+        <div class="table-bento-card">
+          <div class="table-toolbar-homies">
+            <div class="table-title-box">
+              <h3>Job Postings</h3>
+              <p style="font-size: 12px; color: var(--text-muted);" id="jobsCountBadge">0 Active Openings</p>
+            </div>
+            <div class="table-controls-right">
+              <div class="table-search-pill">
+                <span>🔍</span>
+                <input type="text" id="jobsSearchInput" placeholder="Search job title, dept...">
+              </div>
+              <button type="button" class="btn-primary-yellow" onclick="openJobModal()">
+                + Create New Job
+              </button>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="homies-data-table">
+              <thead>
+                <tr>
+                  <th>JOB TITLE & LOCATION</th>
+                  <th>DEPARTMENT</th>
+                  <th>SALARY RANGE</th>
+                  <th>STATUS</th>
+                  <th>APPLICANTS</th>
+                  <th>CREATED</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="jobsTableBody">
+                <tr><td colspan="7" style="text-align: center; padding: 30px;">Loading job postings...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===========================================================
+           VIEW 3: APPLICATIONS MANAGEMENT
+           =========================================================== -->
+      <div id="applicationsView" class="tab-view" style="display: none;">
+        <div class="table-bento-card">
+          <div class="table-toolbar-homies">
+            <div class="table-title-box">
+              <h3>Candidate Applications</h3>
+              <p style="font-size: 12px; color: var(--text-muted);" id="applicationsCountBadge">0 Applications</p>
+            </div>
+            <div class="table-controls-right">
+              <div class="table-search-pill">
+                <span>🔍</span>
+                <input type="text" id="appSearchInput" placeholder="Search name or email...">
+              </div>
+              <select id="appStatusFilter" class="form-control-homies" style="width: auto; padding: 7px 12px; border-radius: var(--radius-pill);">
+                <option value="All">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Under Review">Under Review</option>
+                <option value="Shortlisted">Shortlisted</option>
+                <option value="Interview Scheduled">Interview Scheduled</option>
+                <option value="Selected">Selected</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="homies-data-table">
+              <thead>
+                <tr>
+                  <th>CANDIDATE</th>
+                  <th>APPLIED ROLE</th>
+                  <th>SKILLS</th>
+                  <th>APPLIED DATE</th>
+                  <th>STATUS</th>
+                  <th>SHORTLIST</th>
+                  <th>RESUME</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="applicationsTableBody">
+                <tr><td colspan="8" style="text-align: center; padding: 30px;">Loading applications...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===========================================================
+           VIEW 4: SHORTLIST VIEW
+           =========================================================== -->
+      <div id="shortlistView" class="tab-view" style="display: none;">
+        <div class="table-bento-card">
+          <div class="table-toolbar-homies">
+            <div class="table-title-box">
+              <h3>⭐ Shortlisted Candidates</h3>
+              <p style="font-size: 12px; color: var(--text-muted);" id="shortlistCountBadge">0 Shortlisted</p>
+            </div>
+            <div class="table-controls-right">
+              <div class="table-search-pill">
+                <span>🔍</span>
+                <input type="text" id="shortlistSearchInput" placeholder="Filter shortlisted...">
+              </div>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="homies-data-table">
+              <thead>
+                <tr>
+                  <th>CANDIDATE</th>
+                  <th>APPLIED ROLE</th>
+                  <th>SKILLS</th>
+                  <th>APPLIED DATE</th>
+                  <th>STATUS</th>
+                  <th>SHORTLIST</th>
+                  <th>RESUME</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="shortlistTableBody">
+                <tr><td colspan="8" style="text-align: center; padding: 30px;">Loading shortlisted talent...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===========================================================
+           VIEW 5: INTERVIEWS VIEW
+           =========================================================== -->
+      <div id="interviewsView" class="tab-view" style="display: none;">
+        <div class="table-bento-card">
+          <div class="table-toolbar-homies">
+            <div class="table-title-box">
+              <h3>📅 Scheduled Interviews</h3>
+              <p style="font-size: 12px; color: var(--text-muted);" id="interviewsCountBadge">0 Scheduled</p>
+            </div>
+            <div class="table-controls-right">
+              <div class="table-search-pill">
+                <span>🔍</span>
+                <input type="text" id="interviewsSearchInput" placeholder="Search candidate, job...">
+              </div>
+              <button type="button" class="btn-primary-yellow" onclick="openScheduleInterviewModal()">
+                + Schedule Interview
+              </button>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="homies-data-table">
+              <thead>
+                <tr>
+                  <th>CANDIDATE</th>
+                  <th>APPLIED ROLE</th>
+                  <th>DATE & TIME</th>
+                  <th>ROUND</th>
+                  <th>LOCATION / LINK</th>
+                  <th>STATUS</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="interviewsTableBody">
+                <tr><td colspan="7" style="text-align: center; padding: 30px;">Loading interviews...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- =================================================================
+       MODALS (HOMIESLAB AESTHETIC)
+       ================================================================= -->
+
+  <!-- 1. JOB MODAL -->
+  <div id="jobModal" class="modal-backdrop">
+    <div class="modal-homies modal-lg">
+      <div class="modal-header-homies">
+        <h2 id="jobModalTitle">Job Posting</h2>
+        <button type="button" class="modal-close-btn" onclick="closeModal('jobModal')">✕</button>
+      </div>
+      <form id="jobForm">
+        <div class="modal-body-homies">
+          <input type="hidden" id="jobId">
+          <div class="form-group-homies">
+            <label for="jobTitle">Job Title *</label>
+            <input type="text" id="jobTitle" class="form-control-homies" placeholder="e.g. Senior Backend Engineer" required>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group-homies">
+              <label for="jobDepartment">Department *</label>
+              <input type="text" id="jobDepartment" class="form-control-homies" placeholder="e.g. Engineering, Design" required>
+            </div>
+            <div class="form-group-homies">
+              <label for="jobLocation">Location *</label>
+              <input type="text" id="jobLocation" class="form-control-homies" placeholder="e.g. Bangalore, KA (Hybrid / Remote)" required>
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group-homies">
+              <label for="jobSalary">Salary Range (in ₹ INR) *</label>
+              <input type="text" id="jobSalary" class="form-control-homies" placeholder="e.g. ₹15,00,000 - ₹22,00,000 / year" required>
+            </div>
+            <div class="form-group-homies">
+              <label for="jobType">Job Type *</label>
+              <select id="jobType" class="form-control-homies" required>
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Contract">Contract</option>
+                <option value="Remote">Remote</option>
+                <option value="Internship">Internship</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group-homies">
+            <label for="jobStatus">Posting Status *</label>
+            <select id="jobStatus" class="form-control-homies" required>
+              <option value="Active">Active (Accepting Applications)</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+          <div class="form-group-homies">
+            <label for="jobDescription">Description *</label>
+            <textarea id="jobDescription" class="form-control-homies" rows="4" placeholder="Detail the core duties and responsibilities..." required></textarea>
+          </div>
+          <div class="form-group-homies">
+            <label for="jobRequirements">Requirements</label>
+            <textarea id="jobRequirements" class="form-control-homies" rows="3" placeholder="List required skills and experience..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer-homies">
+          <button type="button" class="btn-primary-black" style="background: transparent; color: var(--text-main); border: 1px solid var(--border-subtle);" onclick="closeModal('jobModal')">Cancel</button>
+          <button type="submit" id="saveJobSubmitBtn" class="btn-primary-yellow">Save Job Posting</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. STATUS SCREENING MODAL -->
+  <div id="statusModal" class="modal-backdrop">
+    <div class="modal-homies" style="max-width: 480px;">
+      <div class="modal-header-homies">
+        <h2>Screening Status</h2>
+        <button type="button" class="modal-close-btn" onclick="closeModal('statusModal')">✕</button>
+      </div>
+      <form id="statusForm">
+        <div class="modal-body-homies">
+          <input type="hidden" id="statusModalAppId">
+          <p style="margin-bottom: 14px; font-size: 13.5px;">Candidate: <strong id="statusModalCandidateName">Candidate</strong></p>
+          <div class="form-group-homies">
+            <label for="statusModalSelect">Application Status *</label>
+            <select id="statusModalSelect" class="form-control-homies" required>
+              <option value="Pending">1. Pending</option>
+              <option value="Under Review">2. Under Review</option>
+              <option value="Shortlisted">3. Shortlisted</option>
+              <option value="Interview Scheduled">4. Interview Scheduled</option>
+              <option value="Selected">5. Selected (Offer)</option>
+              <option value="Rejected">6. Rejected</option>
+            </select>
+          </div>
+          <div class="form-group-homies">
+            <label for="statusModalNotes">Reviewer Notes</label>
+            <textarea id="statusModalNotes" class="form-control-homies" rows="3" placeholder="Add screening evaluation notes..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer-homies">
+          <button type="button" class="btn-primary-black" style="background: transparent; color: var(--text-main); border: 1px solid var(--border-subtle);" onclick="closeModal('statusModal')">Cancel</button>
+          <button type="submit" id="saveStatusSubmitBtn" class="btn-primary-yellow">Update Status</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. INTERVIEW MODAL -->
+  <div id="interviewModal" class="modal-backdrop">
+    <div class="modal-homies">
+      <div class="modal-header-homies">
+        <h2 id="interviewModalTitle">Schedule Candidate Interview</h2>
+        <button type="button" class="modal-close-btn" onclick="closeModal('interviewModal')">✕</button>
+      </div>
+      <form id="interviewForm">
+        <div class="modal-body-homies">
+          <input type="hidden" id="interviewId">
+          <div class="form-group-homies">
+            <label for="interviewAppId">Target Candidate *</label>
+            <select id="interviewAppId" class="form-control-homies" required>
+              <option value="">-- Choose Candidate --</option>
+            </select>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group-homies">
+              <label for="interviewDate">Date *</label>
+              <input type="date" id="interviewDate" class="form-control-homies" required>
+            </div>
+            <div class="form-group-homies">
+              <label for="interviewTime">Time *</label>
+              <input type="time" id="interviewTime" class="form-control-homies" required>
+            </div>
+          </div>
+          <div class="form-group-homies">
+            <label for="interviewType">Round *</label>
+            <select id="interviewType" class="form-control-homies" required>
+              <option value="Initial Screening">Initial HR Screening</option>
+              <option value="Technical Round" selected>Technical Round</option>
+              <option value="System Design">System Design</option>
+              <option value="Hiring Manager Round">Hiring Manager Round</option>
+              <option value="Final Offer Round">Final Offer Round</option>
+            </select>
+          </div>
+          <div class="form-group-homies">
+            <label for="interviewLocation">Meeting Link / Location *</label>
+            <input type="text" id="interviewLocation" class="form-control-homies" placeholder="Google Meet link or Room 302" required>
+          </div>
+          <div class="form-group-homies" id="interviewStatusGroup" style="display: none;">
+            <label for="interviewStatusSelect">Status</label>
+            <select id="interviewStatusSelect" class="form-control-homies">
+              <option value="Scheduled">Scheduled</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="form-group-homies">
+            <label for="interviewNotes">Notes & Preparation</label>
+            <textarea id="interviewNotes" class="form-control-homies" rows="2" placeholder="Specific topics to evaluate..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer-homies">
+          <button type="button" class="btn-primary-black" style="background: transparent; color: var(--text-main); border: 1px solid var(--border-subtle);" onclick="closeModal('interviewModal')">Cancel</button>
+          <button type="submit" id="saveInterviewSubmitBtn" class="btn-primary-yellow">Save Interview</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. PROFILE DOSSIER MODAL -->
+  <div id="applicantProfileModal" class="modal-backdrop">
+    <div class="modal-homies modal-lg">
+      <div class="modal-header-homies">
+        <h2 id="profileModalFullName">Candidate Profile</h2>
+        <button type="button" class="modal-close-btn" onclick="closeModal('applicantProfileModal')">✕</button>
+      </div>
+      <div class="modal-body-homies">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+          <div>
+            <div style="font-size: 17px; font-weight: 800;" id="profileModalJobTitle">Applied Position</div>
+            <div style="font-size: 12.5px; color: var(--text-muted);" id="profileModalDept">Department Info</div>
+          </div>
+          <div id="profileModalStatusBadge"></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px;">
+          <div><div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">EMAIL</div><div id="profileModalEmail" style="font-weight: 700;">-</div></div>
+          <div><div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">PHONE</div><div id="profileModalPhone" style="font-weight: 700;">-</div></div>
+          <div><div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">APPLIED DATE</div><div id="profileModalAppliedDate" style="font-weight: 700;">-</div></div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Education</div>
+          <div id="profileModalEducation" style="font-size: 13.5px; margin-top: 4px;">-</div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Skills</div>
+          <div id="profileModalSkills" style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Experience</div>
+          <div id="profileModalExperience" style="font-size: 13.5px; line-height: 1.5; margin-top: 4px; white-space: pre-wrap;">-</div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Resume Document</div>
+          <div id="profileModalResumeAction" style="margin-top: 6px;"></div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Cover Note</div>
+          <div id="profileModalCoverNote" style="font-size: 13px; color: var(--text-muted); font-style: italic; margin-top: 4px;">-</div>
+        </div>
+
+        <div>
+          <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Scheduled Interviews</div>
+          <div id="profileModalInterviews" style="margin-top: 6px;"></div>
+        </div>
+      </div>
+      <div class="modal-footer-homies">
+        <button type="button" id="profileModalChangeStatusBtn" class="btn-primary-black" style="background: transparent; color: var(--text-main); border: 1px solid var(--border-subtle);">Change Status</button>
+        <button type="button" id="profileModalScheduleBtn" class="btn-primary-yellow">Schedule Interview</button>
+        <button type="button" class="btn-primary-black" onclick="closeModal('applicantProfileModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. CONFIRMATION MODAL -->
+  <div id="confirmActionModal" class="modal-backdrop">
+    <div class="modal-homies" style="max-width: 420px;">
+      <div class="modal-header-homies">
+        <h2 id="confirmModalTitle">Confirm Action</h2>
+        <button type="button" class="modal-close-btn" onclick="closeModal('confirmActionModal')">✕</button>
+      </div>
+      <div class="modal-body-homies">
+        <p id="confirmModalMessage" style="font-size: 14px; line-height: 1.5;">Are you sure you want to proceed?</p>
+      </div>
+      <div class="modal-footer-homies">
+        <button type="button" class="btn-primary-black" style="background: transparent; color: var(--text-main); border: 1px solid var(--border-subtle);" onclick="closeModal('confirmActionModal')">Cancel</button>
+        <button type="button" id="confirmModalSubmitBtn" class="btn-primary-black" style="background: #E53E3E;">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. IN-PAGE LOGIN / REGISTRATION MODAL -->
+  <div id="loginModal" class="modal-backdrop">
+    <div class="modal-homies" style="max-width: 480px; padding: 28px;">
+      <div class="modal-header-homies" style="margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: #18181B; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: #FFC837;">HL</div>
+          <h2 style="font-size: 18px; font-weight: 800; color: var(--text-main);">Sign In / Register</h2>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeLoginModal()">✕</button>
+      </div>
+
+      <!-- Role Selector Cards -->
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+          Select Your Role
+        </label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="role-modal-card selected" id="modalRoleRecruiter" onclick="selectModalRole('recruiter')" style="border: 2px solid #FFC837; border-radius: 14px; padding: 14px 12px; cursor: pointer; text-align: center; background: #FFFBF0; transition: all 0.2s;">
+            <div style="font-size: 24px; margin-bottom: 4px;">🧑‍💼</div>
+            <div style="font-size: 13.5px; font-weight: 800; color: var(--text-main);">Recruiter / HR</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Manage jobs & hiring</div>
+          </div>
+          <div class="role-modal-card" id="modalRoleCandidate" onclick="selectModalRole('candidate')" style="border: 2px solid var(--border-subtle); border-radius: 14px; padding: 14px 12px; cursor: pointer; text-align: center; background: #FAFAF8; transition: all 0.2s;">
+            <div style="font-size: 24px; margin-bottom: 4px;">🎓</div>
+            <div style="font-size: 13.5px; font-weight: 800; color: var(--text-main);">Applicant</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Track applications</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs: Sign In / Sign Up -->
+      <div style="display: flex; background: var(--bg-card-subtle); border-radius: 10px; padding: 3px; margin-bottom: 16px; gap: 2px;">
+        <button type="button" id="modalTabSignIn" class="auth-tab-btn active" onclick="switchModalTab('signin')" style="flex: 1; padding: 8px 12px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; background: #18181B; color: #FFC837;">Sign In</button>
+        <button type="button" id="modalTabSignUp" class="auth-tab-btn" onclick="switchModalTab('signup')" style="flex: 1; padding: 8px 12px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; background: transparent; color: var(--text-muted);">Sign Up</button>
+      </div>
+
+      <!-- Alert Box -->
+      <div id="modalAlertBox" style="display: none; padding: 10px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; margin-bottom: 12px;"></div>
+
+      <!-- Demo Account Pill -->
+      <div style="background: linear-gradient(135deg, #FFFBF0, #FFF5D6); border: 1.5px dashed #FFC837; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="flex: 1;">
+          <div id="modalDemoLabel" style="font-size: 11.5px; font-weight: 800; color: var(--text-main); text-transform: uppercase;">⚡ Demo Recruiter Account</div>
+          <div id="modalDemoCred" style="font-size: 11px; color: var(--text-muted);">admin@recruitment.com / admin123</div>
+        </div>
+        <button type="button" onclick="modalDemoLogin()" style="padding: 6px 12px; border-radius: 16px; border: none; background: #FFC837; color: #18181B; font-size: 11.5px; font-weight: 800; cursor: pointer; white-space: nowrap;">Try Demo →</button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="modalSignInForm" onsubmit="handleModalSignIn(event)">
+        <div class="form-group-homies" style="margin-bottom: 12px;">
+          <label for="modalSiEmail" style="font-size: 12px;">Email Address *</label>
+          <input type="email" id="modalSiEmail" class="form-control-homies" placeholder="e.g. admin@recruitment.com" required>
+        </div>
+        <div class="form-group-homies" style="margin-bottom: 16px;">
+          <label for="modalSiPassword" style="font-size: 12px;">Password *</label>
+          <input type="password" id="modalSiPassword" class="form-control-homies" placeholder="••••••••" required>
+        </div>
+        <button type="submit" id="modalSignInBtn" class="btn-primary-yellow" style="width: 100%; justify-content: center; padding: 11px; font-size: 14px;">
+          <span id="modalSignInSubmitText">Sign In as Recruiter</span> →
+        </button>
+      </form>
+
+      <!-- Sign Up Form -->
+      <form id="modalSignUpForm" style="display: none;" onsubmit="handleModalSignUp(event)">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+          <div class="form-group-homies">
+            <label for="modalSuName" style="font-size: 12px;">Full Name *</label>
+            <input type="text" id="modalSuName" class="form-control-homies" placeholder="Your Name" required>
+          </div>
+          <div class="form-group-homies">
+            <label for="modalSuEmail" style="font-size: 12px;">Email *</label>
+            <input type="email" id="modalSuEmail" class="form-control-homies" placeholder="you@example.com" required>
+          </div>
+        </div>
+        <div class="form-group-homies" style="margin-bottom: 10px;">
+          <label for="modalSuPassword" style="font-size: 12px;">Password (Min. 6 chars) *</label>
+          <input type="password" id="modalSuPassword" class="form-control-homies" placeholder="••••••••" required>
+        </div>
+        <div id="modalCandidateExtraFields" style="display: none;">
+          <div class="form-group-homies" style="margin-bottom: 10px;">
+            <label for="modalSuPhone" style="font-size: 12px;">Phone Number</label>
+            <input type="tel" id="modalSuPhone" class="form-control-homies" placeholder="+91 98765 43210">
+          </div>
+          <div class="form-group-homies" style="margin-bottom: 10px;">
+            <label for="modalSuEducation" style="font-size: 12px;">Education</label>
+            <input type="text" id="modalSuEducation" class="form-control-homies" placeholder="e.g. B.Tech CSE">
+          </div>
+          <div class="form-group-homies" style="margin-bottom: 10px;">
+            <label for="modalSuSkills" style="font-size: 12px;">Key Skills</label>
+            <input type="text" id="modalSuSkills" class="form-control-homies" placeholder="e.g. JavaScript, React, SQL">
+          </div>
+        </div>
+        <button type="submit" id="modalSignUpBtn" class="btn-primary-yellow" style="width: 100%; justify-content: center; padding: 11px; font-size: 14px; margin-top: 6px;">
+          <span>Create Account</span> →
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Client JS Modules -->
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/jobs.js"></script>
+  <script src="js/applications.js"></script>
+  <script src="js/interviews.js"></script>
+  <script src="js/applicants.js"></script>
+
+</body>
+</html>
