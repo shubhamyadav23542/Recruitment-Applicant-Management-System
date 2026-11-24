@@ -223,28 +223,32 @@
         return;
       }
 
-      container.innerHTML = jobs.map(job => `
+      container.innerHTML = jobs.map(job => {
+        const shortDesc = job.description && job.description.length > 110
+          ? job.description.slice(0, 110).trim() + '…'
+          : (job.description || '');
+        return `
         <div class="portal-job-card">
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-              <h3 style="font-size: 17px; font-weight: 800; color: var(--text-main);">${escapeHtml(job.title)}</h3>
-              <span class="badge-pill" style="background: var(--accent-yellow-light); color: #B78103;">${escapeHtml(job.job_type)}</span>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px;">
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main); line-height: 1.35;">${escapeHtml(job.title)}</h3>
+              <span class="badge-pill" style="background: var(--accent-yellow-light); color: #B78103; margin-top: 2px;">${escapeHtml(job.job_type)}</span>
             </div>
-            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
               🏢 ${escapeHtml(job.department)} • 📍 ${escapeHtml(job.location)}
             </div>
-            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main); margin-bottom: 10px;">
               💰 ${escapeHtml(job.salary_range)}
             </div>
             <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 18px;">
-              ${escapeHtml(job.description)}
+              ${escapeHtml(shortDesc)}
             </p>
           </div>
           <button type="button" class="btn-primary-yellow" style="width: 100%; justify-content: center;" onclick="selectJobForApplication(${job.id})">
             Apply Now →
           </button>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     }
 
     function populateJobDropdown(jobs) {

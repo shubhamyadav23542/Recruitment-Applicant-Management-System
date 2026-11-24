@@ -1042,6 +1042,8 @@ body {
   font-weight: 700;
   border-radius: var(--radius-pill);
   line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .badge-active { background: var(--status-active-bg); color: var(--status-active-text); }
